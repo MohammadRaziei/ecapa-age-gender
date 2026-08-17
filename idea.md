@@ -113,7 +113,6 @@ ecapa-age-gender/
 ├── idea.md                       <- this file
 ├── README.md                     <- quickstart / usage
 ├── pyproject.toml                <- installable package metadata (ecapa-age-gender)
-├── Makefile                      <- setup / download / prepare / train / evaluate / export
 │
 ├── ecapa_age_gender/              <- INSTALLABLE INFERENCE PACKAGE (pip install-able)
 │   ├── __init__.py
@@ -121,6 +120,8 @@ ecapa-age-gender/
 │   └── inference.py                 <- AgeGenderClassifier.from_pretrained(...) / .predict(...)
 │
 ├── training/                      <- TRAINING-ONLY CODE, not shipped in the pip package
+│   ├── Makefile                     <- setup / download / prepare / train / evaluate / export
+│   │                                    (no venv - run inside your own env if you want one)
 │   ├── requirements.txt             <- installs ecapa_age_gender + training extras
 │   ├── config.yaml                   <- all hyperparameters
 │   ├── download_data.py                <- pulls Common Voice splits via `datasets`
@@ -137,6 +138,11 @@ ecapa-age-gender/
 └── tests/
     └── test_model.py              <- shape / freezing smoke tests (pytest)
 ```
+
+All `training/Makefile` targets run from inside `training/` (`cd training && make ...`), and
+put the repo root on `PYTHONPATH` for the duration of each command so that both
+`ecapa_age_gender` and `training` resolve as top-level Python packages — no venv is created
+for you; use your own virtualenv/conda env first if you want isolation.
 
 The final `model.pt` / `model.onnx` / `label_map.json` bundle produced by
 `training/export_and_push.py` is what gets pushed to the Hugging Face Hub — from that point

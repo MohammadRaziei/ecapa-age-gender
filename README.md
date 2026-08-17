@@ -11,14 +11,14 @@ The repo is split the way SpeechBrain-style projects usually are:
   all an end user needs: `pip install` it, load a checkpoint, call `.predict_file(...)`.
 - **`training/`** — everything needed to reproduce or extend training: data download,
   manifest building, the training loop, evaluation, and exporting/publishing a trained
-  checkpoint to the Hugging Face Hub. Has its own (heavier) dependencies.
+  checkpoint to the Hugging Face Hub. Has its own (heavier) dependencies and its own
+  `Makefile` — training is a self-contained unit of the repo.
 
 ```
 ecapa-age-gender/
 ├── idea.md                       <- design doc / rationale
 ├── README.md                     <- you are here
 ├── pyproject.toml                <- installable package metadata (ecapa-age-gender)
-├── Makefile                      <- setup / download / prepare / train / evaluate / export
 │
 ├── ecapa_age_gender/              <- INSTALLABLE INFERENCE PACKAGE
 │   ├── __init__.py
@@ -26,6 +26,7 @@ ecapa-age-gender/
 │   └── inference.py                 <- AgeGenderClassifier.from_pretrained(...) / .predict(...)
 │
 ├── training/                      <- TRAINING-ONLY CODE (not shipped in the pip package)
+│   ├── Makefile                     <- setup / download / prepare / train / evaluate / export
 │   ├── requirements.txt
 │   ├── config.yaml                  <- all hyperparameters
 │   ├── download_data.py               <- pulls Common Voice via `datasets`
@@ -45,8 +46,13 @@ ecapa-age-gender/
 
 ## Quickstart: training
 
+All training commands run from inside `training/` (that's where its `Makefile` lives):
+
 ```bash
-# 1. Set up a virtualenv (installs the ecapa_age_gender package + training extras)
+cd training
+
+# 1. Install the ecapa_age_gender package + training-only dependencies
+#    (no virtualenv is created for you - use your own venv/conda env first if you want one)
 make setup
 
 # 2. Get a Hugging Face token and accept the Common Voice dataset terms:
@@ -69,9 +75,8 @@ make evaluate
 make export HUB_REPO=your-username/ecapa-age-gender
 ```
 
-Or run steps 1-6 in one shot: `make all`.
-
-Everything in steps 3-6 is configured from a single file: **[training/config.yaml](training/config.yaml)**.
+Or run steps 1-6 in one shot: `make all`. Everything is configured from a single file:
+**[training/config.yaml](training/config.yaml)**.
 
 ## Quickstart: using a trained model
 
@@ -91,7 +96,7 @@ print(result.as_dict())
 # {'gender': 'female', 'gender_probs': {...}, 'age_bucket': 'thirties', 'age_probs': {...}}
 ```
 
-`from_pretrained(...)` also accepts a local directory (e.g. the `export/` folder from step 7),
+`from_pretrained(...)` also accepts a local directory (e.g. `training/export/` from step 7),
 so you can try a checkpoint before publishing it anywhere.
 
 ## Requirements

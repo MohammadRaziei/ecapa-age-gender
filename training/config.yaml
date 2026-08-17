@@ -5,9 +5,9 @@
 data:
   hf_dataset: "mozilla-foundation/common_voice_17_0"
   language: "en"                       # any Common Voice language code
-  raw_dir: "training/data/raw"                  # where download_data.py saves HF Arrow datasets
-  manifest_dir: "training/data/manifests"       # where prepare_data.py saves filtered CSV manifests
-  label_map_path: "training/data/manifests/label_maps.json"
+  raw_dir: "data/raw"                  # where download_data.py saves HF Arrow datasets
+  manifest_dir: "data/manifests"       # where prepare_data.py saves filtered CSV manifests
+  label_map_path: "data/manifests/label_maps.json"
   sample_rate: 16000
   max_audio_seconds: 6.0               # clips are cropped/padded to this length for batching
   min_audio_seconds: 1.0               # shorter clips are dropped
@@ -44,10 +44,10 @@ train:
   age_loss_weight: 1.0
   grad_clip_norm: 5.0
   log_every_n_steps: 20
-  checkpoint_dir: "training/checkpoints"
+  checkpoint_dir: "checkpoints"
   seed: 42
   device: "auto"                       # "auto" | "cuda" | "cpu"
 
 eval:
   batch_size: 16
-  checkpoint_path: "training/checkpoints/best_model.pt"
+  checkpoint_path: "checkpoints/best_model.pt"
