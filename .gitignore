@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+
+# training artifacts
+training/data/
+training/checkpoints/*.pt
+training/checkpoints/*.json
+pretrained_models/
+export/
+
+# misc
+.DS_Store
+*.egg-info/
