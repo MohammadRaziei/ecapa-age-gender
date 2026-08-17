@@ -1,7 +1,7 @@
 .PHONY: setup download prepare train evaluate export clean distclean all
 
-PYTHON ?= python3
-PIP ?= pip3
+PYTHON ?= python
+PIP ?= pip
 CONFIG ?= config.yaml
 CHECKPOINT ?= checkpoints/best_model.pt
 EXPORT_DIR ?= export
