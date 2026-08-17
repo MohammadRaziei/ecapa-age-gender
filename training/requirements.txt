@@ -1,0 +1,4 @@
+# Installs the `ecapa_age_gender` inference package (from the repo root) plus everything
+# only needed for training: dataset handling, manifest building, metrics, etc.
+# The [train] extra is defined in ../pyproject.toml.
+-e ..[train]
