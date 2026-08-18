@@ -5,11 +5,11 @@
 data:
   # As of October 2025 Mozilla pulled the official mozilla-foundation/common_voice_*
   # repos off the HF Hub (moved to Mozilla Data Collective) - load_dataset() on those
-  # now fails with EmptyDatasetError regardless of token. This is a community mirror
-  # that still has the same audio + age/gender/accent columns, as plain parquet (no
-  # loading script, works with current `datasets` versions). Swap it out if you'd
-  # rather point at Mozilla Data Collective directly or another mirror.
-  hf_dataset: "fsicoli/common_voice_17_0"
+  # now fails with EmptyDatasetError regardless of token. Some community re-uploads
+  # (e.g. fsicoli/*) still ship the old loading-script format, which fails too on
+  # current `datasets` versions ("Dataset scripts are no longer supported"). This one
+  # is plain parquet (no script) and keeps the age/gender/accent columns we need.
+  hf_dataset: "fixie-ai/common_voice_17_0"
   language: "en"                       # any Common Voice language code
   raw_dir: "data/raw"                  # where download_data.py saves HF Arrow datasets
   manifest_dir: "data/manifests"       # where prepare_data.py saves filtered CSV manifests

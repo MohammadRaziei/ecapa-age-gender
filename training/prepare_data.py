@@ -21,6 +21,19 @@ from datasets import load_from_disk
 from utils import ensure_dir, load_config, save_json
 
 
+def _normalize_gender(raw: str) -> str:
+    """Different Common Voice releases/mirrors spell gender differently - e.g. the
+    fixie-ai/common_voice_17_0 mirror uses "male_masculine"/"female_feminine" instead of
+    plain "male"/"female". Collapse known variants down to the plain form so they match
+    whatever's in config.yaml's `genders` list without needing per-mirror config edits."""
+    raw = (raw or "").strip().lower()
+    if raw.startswith("female"):
+        return "female"
+    if raw.startswith("male"):
+        return "male"
+    return raw
+
+
 def build_manifest_for_split(raw_dir: str, split: str, genders: list[str],
                               age_buckets: list[str]) -> pd.DataFrame:
     split_dir = os.path.join(raw_dir, split)
@@ -40,7 +53,7 @@ def build_manifest_for_split(raw_dir: str, split: str, genders: list[str],
     rows = []
     for i, (age, gender) in enumerate(zip(ds["age"], ds["gender"])):
         age = (age or "").strip().lower()
-        gender = (gender or "").strip().lower()
+        gender = _normalize_gender(gender)
         if age not in age_to_idx or gender not in gender_to_idx:
             continue
         rows.append(

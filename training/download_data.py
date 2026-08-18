@@ -4,9 +4,12 @@ NOTE: as of October 2025, Mozilla pulled the official `mozilla-foundation/common
 repos off the Hugging Face Hub (they're now distributed exclusively through Mozilla Data
 Collective: https://datacollective.mozillafoundation.org). `load_dataset(...)` on those
 repo ids will fail with `EmptyDatasetError` regardless of any token - the repos are
-literally empty now, not gated. `config.yaml` defaults to a community parquet mirror
-(`fsicoli/common_voice_17_0`) that keeps the same `age`/`gender` columns and works with
-current `datasets` versions (no loading script, no `trust_remote_code`).
+literally empty now, not gated. Some community re-uploads (e.g. fsicoli/*) still ship the
+old loading-script format, which now fails too with "Dataset scripts are no longer
+supported" on current `datasets` versions. `config.yaml` defaults to a plain-parquet
+mirror (`fixie-ai/common_voice_17_0`, no script) that keeps `age`/`gender` columns -
+note its gender values are `male_masculine`/`female_feminine` rather than plain
+`male`/`female`; `prepare_data.py` normalizes that automatically.
 
 If the mirror happens to be gated or rate-limited for you, log in once with
 `huggingface-cli login` (or `hf auth login`, depending on your `huggingface_hub` version)
