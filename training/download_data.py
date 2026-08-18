@@ -26,6 +26,17 @@ from __future__ import annotations
 import argparse
 import os
 
+# Redirect ALL Hugging Face caches (raw hub file downloads AND the processed dataset
+# cache) into this project's own data/ folder, instead of the OS-default
+# ~/.cache/huggingface - on Windows that's under C:\Users\<you>\, which may be on a
+# different, smaller drive than the project itself. This MUST happen before
+# `datasets`/`huggingface_hub` are imported, since they read these env vars once at
+# import time. `setdefault` means: if you've already set HF_HOME yourself, that wins.
+_CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "hf_cache")
+os.environ.setdefault("HF_HOME", _CACHE_DIR)
+os.environ.setdefault("HF_HUB_CACHE", os.path.join(_CACHE_DIR, "hub"))
+os.environ.setdefault("HF_DATASETS_CACHE", os.path.join(_CACHE_DIR, "datasets"))
+
 from datasets import Audio, load_dataset
 
 from utils import ensure_dir, load_config
@@ -56,6 +67,8 @@ def main() -> None:
 
     cfg = load_config(args.config)
     data_cfg = cfg["data"]
+
+    print(f"[download_data] HF cache dir: {os.environ['HF_HOME']}")
 
     # `token=None` is not "no token" - huggingface_hub resolves it to whatever you're
     # already logged in as via `huggingface-cli login` / `hf auth login`. HF_TOKEN, if
