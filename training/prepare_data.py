@@ -32,6 +32,10 @@ def build_manifest_for_split(raw_dir: str, split: str, genders: list[str],
     ds = load_from_disk(split_dir)
     gender_to_idx = {g: i for i, g in enumerate(genders)}
     age_to_idx = {a: i for i, a in enumerate(age_buckets)}
+    # Some Common Voice releases/mirrors used the old "fourties" spelling instead of
+    # "forties" - accept both without needing a config change.
+    if "forties" in age_to_idx and "fourties" not in age_to_idx:
+        age_to_idx["fourties"] = age_to_idx["forties"]
 
     rows = []
     for i, (age, gender) in enumerate(zip(ds["age"], ds["gender"])):

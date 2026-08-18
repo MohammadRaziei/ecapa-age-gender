@@ -45,9 +45,10 @@ cd training
 # 1. Install dependencies (no venv created for you - use your own if you want one)
 make setup
 
-# 2. Get a Hugging Face token and accept the Common Voice dataset terms:
-#    https://huggingface.co/datasets/mozilla-foundation/common_voice_17_0
-export HF_TOKEN=hf_xxx...
+# 2. (Optional) `download_data.py` defaults to a public Common Voice mirror that needs no
+#    login. If you point config.yaml at a gated dataset instead, either export a token or
+#    just run `huggingface-cli login` once - either is picked up automatically.
+# export HF_TOKEN=hf_xxx...
 
 # 3. Download Common Voice (train/validation/test splits, English by default)
 make download
@@ -75,8 +76,9 @@ rather not go through `make`.
 
 - Python 3.10+
 - A CUDA GPU is strongly recommended for `make train` (CPU works but will be slow)
-- A free Hugging Face account + access token (for downloading Common Voice, and again if
-  you want to push a trained model to the Hub)
+- A Hugging Face account/token is only needed if you point `config.yaml` at a gated
+  dataset, or when you run `make export HUB_REPO=...` to push a trained model to the Hub -
+  the default dataset mirror itself is public
 
 ## Status
 

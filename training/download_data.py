@@ -1,11 +1,18 @@
 """Download Common Voice splits and cache them locally as Hugging Face Arrow datasets.
 
-Common Voice is a *gated* dataset on the Hugging Face Hub: you must accept its terms once
-at https://huggingface.co/datasets/mozilla-foundation/common_voice_17_0 (or whichever
-version/config you set in config.yaml) while logged in, then create an access token at
-https://huggingface.co/settings/tokens and export it:
+NOTE: as of October 2025, Mozilla pulled the official `mozilla-foundation/common_voice_*`
+repos off the Hugging Face Hub (they're now distributed exclusively through Mozilla Data
+Collective: https://datacollective.mozillafoundation.org). `load_dataset(...)` on those
+repo ids will fail with `EmptyDatasetError` regardless of any token - the repos are
+literally empty now, not gated. `config.yaml` defaults to a community parquet mirror
+(`fsicoli/common_voice_17_0`) that keeps the same `age`/`gender` columns and works with
+current `datasets` versions (no loading script, no `trust_remote_code`).
 
-    export HF_TOKEN=hf_xxx...
+If the mirror happens to be gated or rate-limited for you, log in once with
+`huggingface-cli login` (or `hf auth login`, depending on your `huggingface_hub` version)
+and this script will pick up that cached token automatically - no HF_TOKEN env var
+required. Setting HF_TOKEN still works too, and overrides the cached login if both are
+present.
 
 Usage:
     python3 download_data.py --config config.yaml
@@ -24,7 +31,7 @@ from utils import ensure_dir, load_config
 def download_split(hf_dataset: str, language: str, split: str, sample_rate: int,
                     out_dir: str, token: str | None) -> None:
     print(f"[download_data] fetching split='{split}' of {hf_dataset} ({language}) ...")
-    ds = load_dataset(hf_dataset, language, split=split, token=token, trust_remote_code=True)
+    ds = load_dataset(hf_dataset, language, split=split, token=token)
     ds = ds.cast_column("audio", Audio(sampling_rate=sample_rate))
 
     split_dir = os.path.join(out_dir, split)
@@ -47,15 +54,10 @@ def main() -> None:
     cfg = load_config(args.config)
     data_cfg = cfg["data"]
 
+    # `token=None` is not "no token" - huggingface_hub resolves it to whatever you're
+    # already logged in as via `huggingface-cli login` / `hf auth login`. HF_TOKEN, if
+    # set, takes priority. Neither is required for the default public mirror.
     token = os.environ.get("HF_TOKEN")
-    if token is None:
-        raise SystemExit(
-            "HF_TOKEN environment variable not set.\n"
-            f"1. Accept the dataset terms at https://huggingface.co/datasets/{data_cfg['hf_dataset']}\n"
-            "2. Create a token at https://huggingface.co/settings/tokens\n"
-            "3. export HF_TOKEN=hf_xxx...\n"
-            "then re-run this script."
-        )
 
     ensure_dir(data_cfg["raw_dir"])
     for split in args.splits:
