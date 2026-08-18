@@ -1,6 +1,10 @@
-"""Package a training checkpoint into the self-contained bundle that
-`ecapa_age_gender.AgeGenderClassifier.from_pretrained(...)` expects, and (optionally) push
-it to the Hugging Face Hub.
+"""Package a training checkpoint into a self-contained model.pt + model.onnx + label_map
+bundle, and (optionally) push it to the Hugging Face Hub.
+
+NOTE: there is currently no separate `ecapa_age_gender` inference package in this repo -
+this script only produces the raw artifacts. Loading them back is a few lines of plain
+PyTorch (see the model card template below). Packaging that into a proper installable
+`pip install`-able inference library is a later step (see idea.md, section 5 "Roadmap").
 
 Produces, in --out_dir:
   - model.pt          torch checkpoint: {"model_state_dict", "model_config"}
@@ -10,10 +14,10 @@ Produces, in --out_dir:
 
 Usage:
     # local export only
-    python -m training.export_and_push --checkpoint training/checkpoints/best_model.pt --out_dir export/
+    python3 export_and_push.py --checkpoint checkpoints/best_model.pt --out_dir export/
 
     # export + push to the Hub (requires `huggingface-cli login` or HF_TOKEN)
-    python -m training.export_and_push --checkpoint training/checkpoints/best_model.pt \
+    python3 export_and_push.py --checkpoint checkpoints/best_model.pt \
         --out_dir export/ --push_to_hub your-username/ecapa-age-gender
 """
 from __future__ import annotations
@@ -24,8 +28,8 @@ import shutil
 
 import torch
 
-from ecapa_age_gender.model import MultiTaskECAPA, MultiTaskECAPAConfig
-from training.utils import ensure_dir, save_json
+from model import MultiTaskECAPA, MultiTaskECAPAConfig
+from utils import ensure_dir, save_json
 
 MODEL_CARD_TEMPLATE = """---
 license: apache-2.0
@@ -46,12 +50,24 @@ inference). See the project's `idea.md` for the full design rationale.
 ## Usage
 
 ```python
-from ecapa_age_gender import AgeGenderClassifier
+import json
+import torch
+from model import MultiTaskECAPA, MultiTaskECAPAConfig  # see this repo's training/model.py
 
-clf = AgeGenderClassifier.from_pretrained("{repo_id}")
-result = clf.predict_file("someone_talking.wav")
-print(result.as_dict())
+ckpt = torch.load("model.pt", map_location="cpu")
+model = MultiTaskECAPA(MultiTaskECAPAConfig(**ckpt["model_config"]))
+model.load_state_dict(ckpt["model_state_dict"])
+model.eval()
+
+labels = json.load(open("label_map.json"))
+waveform, rel_length = ...  # 16kHz mono waveform tensor (1, T), rel_length = torch.ones(1)
+out = model(waveform, rel_length)
+gender = labels["genders"][out["gender_logits"].argmax(-1).item()]
+age_bucket = labels["age_buckets"][out["age_logits"].argmax(-1).item()]
 ```
+
+A proper `pip install`-able wrapper package (with a one-line `from_pretrained(...)` API)
+is planned for later - see this repo's `idea.md`.
 
 ## Labels
 

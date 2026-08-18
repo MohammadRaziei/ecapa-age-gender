@@ -8,7 +8,7 @@ lazily by index. The manifest only carries the (split, row_index, gender_label, 
 tuples plus clip duration, so filtering/inspection is fast without touching audio at all.
 
 Usage:
-    python -m src.prepare_data --config config.yaml
+    python3 prepare_data.py --config config.yaml
 """
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ import os
 import pandas as pd
 from datasets import load_from_disk
 
-from training.utils import ensure_dir, load_config, save_json
+from utils import ensure_dir, load_config, save_json
 
 
 def build_manifest_for_split(raw_dir: str, split: str, genders: list[str],
@@ -26,7 +26,7 @@ def build_manifest_for_split(raw_dir: str, split: str, genders: list[str],
     split_dir = os.path.join(raw_dir, split)
     if not os.path.isdir(split_dir):
         raise FileNotFoundError(
-            f"{split_dir} not found. Run `python -m src.download_data` first."
+            f"{split_dir} not found. Run `python3 download_data.py` first."
         )
 
     ds = load_from_disk(split_dir)

@@ -8,8 +8,8 @@ https://huggingface.co/settings/tokens and export it:
     export HF_TOKEN=hf_xxx...
 
 Usage:
-    python -m src.download_data --config config.yaml
-    python -m src.download_data --config config.yaml --splits train validation test
+    python3 download_data.py --config config.yaml
+    python3 download_data.py --config config.yaml --splits train validation test
 """
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ import os
 
 from datasets import Audio, load_dataset
 
-from training.utils import ensure_dir, load_config
+from utils import ensure_dir, load_config
 
 
 def download_split(hf_dataset: str, language: str, split: str, sample_rate: int,

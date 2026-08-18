@@ -7,7 +7,7 @@ Reports:
     a proxy for "how many decades off" the model typically is)
 
 Usage:
-    python -m src.evaluate --config config.yaml --checkpoint checkpoints/best_model.pt
+    python3 evaluate.py --config config.yaml --checkpoint checkpoints/best_model.pt
 """
 from __future__ import annotations
 
@@ -18,10 +18,10 @@ import torch
 from sklearn.metrics import classification_report, confusion_matrix
 from torch.utils.data import DataLoader
 
-from ecapa_age_gender.model import build_model
+from model import build_model
 
-from training.dataset import CommonVoiceAgeGenderDataset, collate_fn
-from training.utils import load_config, resolve_device
+from dataset import CommonVoiceAgeGenderDataset, collate_fn
+from utils import load_config, resolve_device
 
 
 def main() -> None:

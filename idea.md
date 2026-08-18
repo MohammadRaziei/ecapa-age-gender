@@ -101,65 +101,21 @@ bucketed into decades — a perfect match for the design above.
 Common Voice on Hugging Face is a **gated dataset** — you must accept its terms on the dataset page once, then use a
 Hugging Face access token. See `README` "Setup" section below.
 
-## 5. Repo layout
-
-The repo follows the split common in SpeechBrain-style projects: a small, dependency-light
-**installable inference package**, kept separate from the (heavier, optional) **training
-code**. A user who just wants predictions never needs `datasets`, `pandas`, `scikit-learn`,
-or the Common Voice download machinery at all.
-
-```
-ecapa-age-gender/
-├── idea.md                       <- this file
-├── README.md                     <- quickstart / usage
-├── pyproject.toml                <- installable package metadata (ecapa-age-gender)
-│
-├── ecapa_age_gender/              <- INSTALLABLE INFERENCE PACKAGE (pip install-able)
-│   ├── __init__.py
-│   ├── model.py                    <- MultiTaskECAPA (backbone + freezing logic + heads)
-│   └── inference.py                 <- AgeGenderClassifier.from_pretrained(...) / .predict(...)
-│
-├── training/                      <- TRAINING-ONLY CODE, not shipped in the pip package
-│   ├── Makefile                     <- setup / download / prepare / train / evaluate / export
-│   │                                    (no venv - run inside your own env if you want one)
-│   ├── requirements.txt             <- installs ecapa_age_gender + training extras
-│   ├── config.yaml                   <- all hyperparameters
-│   ├── download_data.py                <- pulls Common Voice splits via `datasets`
-│   ├── prepare_data.py                  <- filters valid rows, builds manifests + label maps
-│   ├── dataset.py                        <- PyTorch Dataset + collate_fn
-│   ├── train.py                           <- training loop, checkpointing, logging
-│   ├── evaluate.py                         <- gender acc / age-bucket acc / age MAE-in-buckets
-│   ├── export_and_push.py                   <- checkpoint -> model.pt + model.onnx + Hub push
-│   ├── data/                                 <- (gitignored) downloaded/prepared data
-│   └── checkpoints/                           <- (gitignored) saved models
-│
-├── examples/
-│   └── predict_example.py         <- minimal end-to-end usage of the installed package
-└── tests/
-    └── test_model.py              <- shape / freezing smoke tests (pytest)
-```
-
-All `training/Makefile` targets run from inside `training/` (`cd training && make ...`), and
-put the repo root on `PYTHONPATH` for the duration of each command so that both
-`ecapa_age_gender` and `training` resolve as top-level Python packages — no venv is created
-for you; use your own virtualenv/conda env first if you want isolation.
-
-The final `model.pt` / `model.onnx` / `label_map.json` bundle produced by
-`training/export_and_push.py` is what gets pushed to the Hugging Face Hub — from that point
-on, `ecapa_age_gender.AgeGenderClassifier.from_pretrained("user/ecapa-age-gender")` is all
-downstream users ever need to touch.
-
-## 6. Roadmap / next steps
+## 5. Roadmap / next steps
 
 1. **Baseline** — fully frozen ECAPA + linear heads → sanity-check the pipeline and get a fast reference number.
 2. **Partial fine-tune** — unfreeze last `k` blocks + pooling, as designed above → main experiment.
 3. **Compare against literature** — Kwasny & Hemmerling's TIMIT/Common-Voice numbers (gender 99.6%, age MAE ~5 years) and
    audEERING's wav2vec2 baseline, on the same Common Voice test split, for an apples-to-apples comparison.
 4. **Ordinal loss for age** (CORAL / soft-ordinal CE) if plain classification underperforms on adjacent-bucket confusions.
-5. **Release** — publish weights + card on Hugging Face once results are competitive, so this stops being a gap in the
+5. **Once accuracy is good: split off an installable inference package** (`ecapa_age_gender/`
+   with `model.py` + `inference.py`, a `pyproject.toml`, a `from_pretrained(...)` API) that
+   depends on nothing beyond `torch`/`torchaudio`/`speechbrain` — this is the packaging
+   work being deferred for now, kept here as a reminder of where the repo is headed.
+6. **Release** — publish weights + card on Hugging Face once results are competitive, so this stops being a gap in the
    open-source ecosystem.
 
-## 7. References
+## 6. References
 
 - Kwasny, D. & Hemmerling, D. (2021). *Joint gender and age estimation based on speech signals using x-vectors and
   transfer learning.* ICASSP 2021 / arXiv:2012.01551.

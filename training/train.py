@@ -1,7 +1,7 @@
 """Train MultiTaskECAPA on the prepared Common Voice manifests.
 
 Usage:
-    python -m src.train --config config.yaml
+    python3 train.py --config config.yaml
 """
 from __future__ import annotations
 
@@ -15,10 +15,10 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from ecapa_age_gender.model import build_model
+from model import build_model
 
-from training.dataset import CommonVoiceAgeGenderDataset, collate_fn
-from training.utils import ensure_dir, load_config, resolve_device, save_json, set_seed
+from dataset import CommonVoiceAgeGenderDataset, collate_fn
+from utils import ensure_dir, load_config, resolve_device, save_json, set_seed
 
 
 def run_epoch(model, loader, device, optimizer, cfg, train: bool):
